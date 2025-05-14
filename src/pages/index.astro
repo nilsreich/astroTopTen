@@ -1,0 +1,117 @@
+---
+import '../global.css'
+// @ts-ignore
+import { pwaInfo } from 'virtual:pwa-info'
+import jsonData from "../data.json"; // Stelle sicher, dass dieser Pfad korrekt ist
+
+const tasks = jsonData.task || [];
+const initialTask = tasks[Math.floor(Math.random() * tasks.length)];
+---
+
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<meta name="viewport" content="width=device-width" />
+		<meta name="generator" content={Astro.generator} />
+		<title>Astro</title>
+		    { pwaInfo && <Fragment set:html={pwaInfo.webManifest.linkTag} /> }
+    <script src="/src/pwa.ts"></script>
+  </head>
+  <body
+    class="flex p-4 flex-col items-center justify-center h-[100svh] dark:bg-neutral-950 bg-neutral-50 relative"
+  >
+    <dialog
+      id="myDialog"
+      class="p-6 border border-neutral-800 backdrop:backdrop-blur-md rounded-md dark:bg-neutral-900 bg-white w-full max-w-xl dark:text-neutral-200 text-neutral-900 m-auto"
+    >
+      <h2 class="text-xl font-semibold mb-4">Anleitung</h2>
+
+      <p class="mb-6 text-xl">
+        Jeder zieht eine geheime Zahl (1 bis 10). Der Spielführer liest die
+        Sitation vor, antwortet entsprechend seiner Zahl und zeigt danach seine
+        gezogene Zahl allen anderen. Die anderen Spieler antworten reihum
+        ebenfalls passend zu ihrer geheimen Zahl (ohne diese zu zeigen) und dem
+        was an bisherigen Antworten gegeben wurde. Anschließend muss der
+        Spielführer versuchen, die Antworten aller anderen Spieler in der
+        richtigen Reihenfolge einzusortieren.
+      </p>
+      <form method="dialog" class="flex justify-center">
+        <button
+          value="cancel"
+          class="px-4 py-2 rounded-md bg-green-600 hover:bg-green-500 text-white focus:outline-none focus:ring-2 focus:ring-offset-4 dark:focus:ring-offset-neutral-800 focus:ring-green-500 dark:focus:ring-2"
+        >
+          Verstanden
+        </button>
+      </form>
+    </dialog>
+
+    <button
+      id="openDialogButton"
+      class="absolute top-8 right-8 p-2 rounded-full hover:bg-neutral-200 dark:hover:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-neutral-500 dark:focus:ring-white/50"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke-width="1.5"
+        stroke="currentColor"
+        class="size-8 text-neutral-700 dark:text-neutral-600"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z"
+        ></path>
+      </svg>
+    </button>
+
+    <div class="max-w-lg w-full flex flex-col gap-8 p-4 sm:p-0">
+      <div
+        id="task-display"
+        class="py-4 px-8 rounded-md bg-neutral-100 dark:bg-neutral-900 border dark:border-neutral-800 border-neutral-200 text-2xl leading-relaxed sm:leading-9 text-neutral-950 dark:text-neutral-200"
+      >
+        {initialTask}
+      </div>
+    </div>
+
+    <button
+      tabindex="1"
+      id="next-task-button"
+      class="absolute bottom-8 px-4 py-2 hover:bg-green-500 active:bg-green-700 rounded-md border border-green-500 hover:border-green-400 mx-auto bg-green-600 font-semibold text-neutral-100 w-52 text-base sm:text-lg focus:outline-none focus:ring-2 focus:ring-offset-4 dark:focus:ring-offset-neutral-950 focus:ring-green-400 dark:focus:ring-2"
+    >
+      Nächste Aufgabe
+    </button>
+
+    <script define:vars={{ tasks, initialTask }}>
+      const taskDisplayElement = document.getElementById("task-display");
+      const nextTaskButtonElement = document.getElementById("next-task-button");
+      const myDialog = document.getElementById("myDialog");
+      const openDialogButton = document.getElementById("openDialogButton");
+
+      // Logik für nächste Aufgabe
+      nextTaskButtonElement.addEventListener("click", () => {
+        let newTask;
+        do {
+          newTask = tasks[Math.floor(Math.random() * tasks.length)];
+        } while (newTask === taskDisplayElement.textContent);
+        taskDisplayElement.textContent = newTask;
+      });
+
+      // Logik für den Dialog
+      openDialogButton.addEventListener("click", () => {
+        myDialog.showModal();
+      });
+
+      myDialog.addEventListener("click", (event) => {
+        if (event.target === myDialog) {
+          myDialog.close();
+        }
+      });
+
+      myDialog.addEventListener("close", () => {
+        nextTaskButtonElement.focus();
+      });
+    </script>
+  </body>
+</html>
